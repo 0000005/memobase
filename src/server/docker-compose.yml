@@ -58,10 +58,31 @@ services:
     volumes:
       - ./api/config.yaml:/app/config.yaml
 
+
+  memobase-mcp:
+    container_name: memobase-mcp
+    environment:
+      - TRANSPORT=sse
+      - HOST=0.0.0.0
+      - PORT=8050
+      - MEMOBASE_API_KEY=${ACCESS_TOKEN}
+      - MEMOBASE_BASE_URL=http://172.16.10.36:8019
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      memobase-server-api:
+        condition: service_started
+    ports:
+      - '8050:8050'
+    build:
+      context: ../mcp
+
 volumes:
   memobase-server-db:
     driver: local
   memobase-server-redis:
     driver: local
   memobase-server-api:
+    driver: local
+  memobase-inspector:
     driver: local

@@ -26,7 +26,7 @@ The implementation follows the best practices laid out by Anthropic for building
 
 The server provides three essential memory management tools:
 
-1. **`save_memory`**: Store any information in long-term memory with semantic indexing
+1. **`save_memory`**: Store conversation messages in long-term memory with semantic indexing
 2. **`get_user_profiles`**: Retrieve complete user profiles
 3. **`search_memories`**: Find relevant context for a given query
 

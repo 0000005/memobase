@@ -58,25 +58,39 @@ mcp = FastMCP(
 
 
 @mcp.tool()
-async def save_memory(ctx: Context, text: str) -> str:
-    """Save information to your long-term memory.
+async def save_memory(ctx: Context, messages: list) -> str:
+    """Save conversation messages to your long-term memory.
 
-    This tool is designed to store any type of information that might be useful in the future.
+    This tool is designed to store conversation messages that might be useful in the future.
     The content will be processed and indexed for later retrieval through semantic search.
 
     Args:
         ctx: The MCP server provided context which includes the Memobase client
-        text: The content to store in memory, including any relevant details and context
+        messages: A list of message objects, each containing 'role' and 'content' keys
+                Example: [
+                    {"role": "user", "content": "Hello, I'm Gus"},
+                    {"role": "assistant", "content": "Hi, nice to meet you, Gus!"}
+                ]
     """
     try:
         memobase_client: AsyncMemoBaseClient = (
             ctx.request_context.lifespan_context.memobase_client
         )
-        messages = [{"role": "user", "content": text}]
+        # Validate the messages format
+        if not isinstance(messages, list):
+            return "Error: messages must be a list"
+
+        for msg in messages:
+            if not isinstance(msg, dict) or 'role' not in msg or 'content' not in msg:
+                return "Error: each message must be a dictionary with 'role' and 'content' keys"
+
         u = await memobase_client.get_or_create_user(DEFAULT_USER_ID)
         await u.insert(ChatBlob(messages=messages))
         await u.flush()
-        return f"Successfully saved memory: {text[:100]}..."
+
+        # Create a summary for the response
+        content_summary = ", ".join([f"{msg['role']}: {msg['content'][:50]}..." for msg in messages[:2]])
+        return f"Successfully saved memory with {len(messages)} messages: {content_summary}"
     except Exception as e:
         return f"Error saving memory: {str(e)}"
 
